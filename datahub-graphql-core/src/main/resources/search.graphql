@@ -167,6 +167,16 @@ input  SearchFlags {
   fields to include for custom Highlighting
   """
   customHighlightingFields: [String!]
+
+  """
+  Whether or not to fetch and request for structured property facets when doing a search
+  """
+  includeStructuredPropertyFacets: Boolean
+
+  """
+  Determines whether to filter out any non-latest entity version if entity is part of a Version Set, default true
+  """
+  filterNonLatestVersions: Boolean
 }
 
 """
@@ -871,6 +881,11 @@ type FacetMetadata {
   Display name of the field
   """
   displayName: String
+
+  """
+  Entity corresponding to the facet
+  """
+  entity: Entity
 
   """
   Aggregated search result counts by value of the field

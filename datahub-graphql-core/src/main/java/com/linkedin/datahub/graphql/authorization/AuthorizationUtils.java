@@ -232,6 +232,10 @@ public class AuthorizationUtils {
     try {
       Object[] args =
           allFields.stream()
+              // New versions of graphql.codegen generate serialVersionUID
+              // We need to filter serialVersionUID out because serialVersionUID is
+              // never part of the entity type constructor
+              .filter(field -> !field.getName().contains("serialVersionUID"))
               .map(
                   field -> {
                     // properties are often not required but only because
@@ -337,6 +341,11 @@ public class AuthorizationUtils {
   public static boolean canManageStructuredProperties(@Nonnull QueryContext context) {
     return AuthUtil.isAuthorized(
         context.getOperationContext(), PoliciesConfig.MANAGE_STRUCTURED_PROPERTIES_PRIVILEGE);
+  }
+
+  public static boolean canViewStructuredPropertiesPage(@Nonnull QueryContext context) {
+    return AuthUtil.isAuthorized(
+        context.getOperationContext(), PoliciesConfig.VIEW_STRUCTURED_PROPERTIES_PAGE_PRIVILEGE);
   }
 
   public static boolean canManageForms(@Nonnull QueryContext context) {

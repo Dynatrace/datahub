@@ -62,6 +62,11 @@ fragment lineageNodeProperties on EntityWithRelationships {
         health {
             ...entityHealth
         }
+        structuredProperties {
+            properties {
+                ...structuredPropertiesFields
+            }
+        }
     }
     ... on DataFlow {
         orchestrator
@@ -96,6 +101,11 @@ fragment lineageNodeProperties on EntityWithRelationships {
         }
         health {
             ...entityHealth
+        }
+        structuredProperties {
+            properties {
+                ...structuredPropertiesFields
+            }
         }
     }
     ... on Dashboard {
@@ -155,6 +165,11 @@ fragment lineageNodeProperties on EntityWithRelationships {
         health {
             ...entityHealth
         }
+        structuredProperties {
+            properties {
+                ...structuredPropertiesFields
+            }
+        }
     }
     ... on Chart {
         tool
@@ -187,6 +202,11 @@ fragment lineageNodeProperties on EntityWithRelationships {
         }
         health {
             ...entityHealth
+        }
+        structuredProperties {
+            properties {
+                ...structuredPropertiesFields
+            }
         }
     }
     ... on Dataset {
@@ -227,6 +247,11 @@ fragment lineageNodeProperties on EntityWithRelationships {
         health {
             ...entityHealth
         }
+        structuredProperties {
+            properties {
+                ...structuredPropertiesFields
+            }
+        }
     }
     ... on MLModelGroup {
         urn
@@ -234,6 +259,9 @@ fragment lineageNodeProperties on EntityWithRelationships {
         name
         description
         origin
+        tags {
+            ...globalTagsFields
+        }
         platform {
             ...platformFields
         }
@@ -242,6 +270,25 @@ fragment lineageNodeProperties on EntityWithRelationships {
         }
         status {
             removed
+        }
+        properties {
+            propertiesName: name
+            createdTS: created {
+                time
+                actor
+            }
+            customProperties {
+                key
+                value
+            }
+        }
+        editableProperties {
+            description
+        }
+        structuredProperties {
+            properties {
+                ...structuredPropertiesFields
+            }
         }
     }
     ... on MLModel {
@@ -250,6 +297,9 @@ fragment lineageNodeProperties on EntityWithRelationships {
         name
         description
         origin
+        tags {
+            ...globalTagsFields
+        }
         platform {
             ...platformFields
         }
@@ -258,6 +308,39 @@ fragment lineageNodeProperties on EntityWithRelationships {
         }
         status {
             removed
+        }
+        versionProperties {
+            versionSet {
+                urn
+                type
+            }
+            version {
+                versionTag
+            }
+            aliases {
+                versionTag
+            }
+            comment
+        }
+        properties {
+            propertiesName: name
+            createdTS: created {
+                time
+                actor
+            }
+            tags
+            customProperties {
+                key
+                value
+            }
+        }
+        editableProperties {
+            description
+        }
+        structuredProperties {
+            properties {
+                ...structuredPropertiesFields
+            }
         }
     }
     ... on MLFeatureTable {
@@ -292,6 +375,9 @@ fragment lineageNodeProperties on EntityWithRelationships {
     ... on Restricted {
         urn
         type
+    }
+    ... on DataProcessInstance {
+        ...dataProcessInstanceFields
     }
 }
 

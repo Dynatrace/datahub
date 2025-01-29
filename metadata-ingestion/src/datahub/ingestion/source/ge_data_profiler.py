@@ -57,7 +57,11 @@ from datahub.ingestion.source.profiling.common import (
     convert_to_cardinality,
 )
 from datahub.ingestion.source.sql.sql_report import SQLSourceReport
-from datahub.metadata.com.linkedin.pegasus2avro.schema import EditableSchemaMetadata
+from datahub.ingestion.source.sql.sql_types import resolve_sql_type
+from datahub.metadata.com.linkedin.pegasus2avro.schema import (
+    EditableSchemaMetadata,
+    NumberType,
+)
 from datahub.metadata.schema_classes import (
     DatasetFieldProfileClass,
     DatasetProfileClass,
@@ -263,7 +267,6 @@ def _is_single_row_query_method(query: Any) -> bool:
         "get_column_max",
         "get_column_mean",
         "get_column_stdev",
-        "get_column_stdev",
         "get_column_nonnull_count",
         "get_column_unique_count",
     }
@@ -324,7 +327,7 @@ def _is_single_row_query_method(query: Any) -> bool:
 
 
 def _run_with_query_combiner(
-    method: Callable[Concatenate["_SingleDatasetProfiler", P], None]
+    method: Callable[Concatenate["_SingleDatasetProfiler", P], None],
 ) -> Callable[Concatenate["_SingleDatasetProfiler", P], None]:
     @functools.wraps(method)
     def inner(
@@ -361,6 +364,8 @@ class _SingleDatasetProfiler(BasicDatasetProfilerBase):
     platform: str
     env: str
 
+    column_types: Dict[str, str] = dataclasses.field(default_factory=dict)
+
     def _get_columns_to_profile(self) -> List[str]:
         if not self.config.any_field_level_metrics_enabled():
             return []
@@ -374,6 +379,7 @@ class _SingleDatasetProfiler(BasicDatasetProfilerBase):
 
         for col_dict in self.dataset.columns:
             col = col_dict["name"]
+            self.column_types[col] = str(col_dict["type"])
             # We expect the allow/deny patterns to specify '<table_pattern>.<column_pattern>'
             if not self.config._allow_deny_patterns.allowed(
                 f"{self.dataset_name}.{col}"
@@ -429,6 +435,21 @@ class _SingleDatasetProfiler(BasicDatasetProfilerBase):
         column_spec.type_ = BasicDatasetProfilerBase._get_column_type(
             self.dataset, column
         )
+
+        if column_spec.type_ == ProfilerDataType.UNKNOWN:
+            try:
+                datahub_field_type = resolve_sql_type(
+                    self.column_types[column], self.dataset.engine.dialect.name.lower()
+                )
+            except Exception as e:
+                logger.debug(
+                    f"Error resolving sql type {self.column_types[column]}: {e}"
+                )
+                datahub_field_type = None
+            if datahub_field_type is None:
+                return
+            if isinstance(datahub_field_type, NumberType):
+                column_spec.type_ = ProfilerDataType.NUMERIC
 
     @_run_with_query_combiner
     def _get_column_cardinality(
@@ -1516,9 +1537,7 @@ def create_bigquery_temp_table(
         query_job: Optional["google.cloud.bigquery.job.query.QueryJob"] = (
             # In google-cloud-bigquery 3.15.0, the _query_job attribute was
             # made public and renamed to query_job.
-            cursor.query_job
-            if hasattr(cursor, "query_job")
-            else cursor._query_job  # type: ignore[attr-defined]
+            cursor.query_job if hasattr(cursor, "query_job") else cursor._query_job  # type: ignore[attr-defined]
         )
         assert query_job
         temp_destination_table = query_job.destination

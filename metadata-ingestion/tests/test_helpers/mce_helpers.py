@@ -300,9 +300,9 @@ def assert_for_each_entity(
     for urn, aspect_val in aspect_map.items():
         if aspect_val is not None:
             for f in aspect_field_matcher:
-                assert aspect_field_matcher[f] == _get_element(
-                    aspect_val, [f]
-                ), f"urn: {urn} -> Field {f} must match value {aspect_field_matcher[f]}, found {_get_element(aspect_val, [f])}"
+                assert aspect_field_matcher[f] == _get_element(aspect_val, [f]), (
+                    f"urn: {urn} -> Field {f} must match value {aspect_field_matcher[f]}, found {_get_element(aspect_val, [f])}"
+                )
             success.append(urn)
         elif urn not in exception_urns:
             print(f"Adding {urn} to failures")
@@ -323,7 +323,7 @@ def assert_entity_mce_aspect(
 ) -> int:
     # TODO: Replace with read_metadata_file()
     test_output = load_json_file(file)
-    entity_type = Urn.create_from_string(entity_urn).get_type()
+    entity_type = Urn.from_string(entity_urn).get_type()
     assert isinstance(test_output, list)
     # mce urns
     mces: List[MetadataChangeEventClass] = [
@@ -346,7 +346,7 @@ def assert_entity_mcp_aspect(
 ) -> int:
     # TODO: Replace with read_metadata_file()
     test_output = load_json_file(file)
-    entity_type = Urn.create_from_string(entity_urn).get_type()
+    entity_type = Urn.from_string(entity_urn).get_type()
     assert isinstance(test_output, list)
     # mcps that match entity_urn
     mcps: List[MetadataChangeProposalWrapper] = [
@@ -361,9 +361,9 @@ def assert_entity_mcp_aspect(
             assert mcp.aspect
             aspect_val = mcp.aspect.to_obj()
             for f in aspect_field_matcher:
-                assert aspect_field_matcher[f] == _get_element(
-                    aspect_val, [f]
-                ), f"urn: {mcp.entityUrn} -> Field {f} must match value {aspect_field_matcher[f]}, found {_get_element(aspect_val, [f])}"
+                assert aspect_field_matcher[f] == _get_element(aspect_val, [f]), (
+                    f"urn: {mcp.entityUrn} -> Field {f} must match value {aspect_field_matcher[f]}, found {_get_element(aspect_val, [f])}"
+                )
                 matches = matches + 1
     return matches
 

@@ -345,6 +345,11 @@ public class PolicyEngine {
       return Set.of();
     } else {
       Urn entityUrn = UrnUtils.getUrn(resourceSpec.getEntity());
+      if (SCHEMA_FIELD_ENTITY_NAME.equals(entityUrn.getEntityType())){
+        //we do not have ownership on column return ownership on table
+        entityUrn = UrnUtils.getUrn(entityUrn.getEntityKey().get(0));
+      }
+      
       EnvelopedAspect ownershipAspect;
       try {
         EntityResponse response =

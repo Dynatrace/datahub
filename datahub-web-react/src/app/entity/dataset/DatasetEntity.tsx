@@ -210,6 +210,7 @@ export class DatasetEntity implements Entity<Dataset> {
                         },
                     },
                 },
+/*                
                 {
                     name: 'Incidents',
                     component: IncidentTab,
@@ -218,6 +219,7 @@ export class DatasetEntity implements Entity<Dataset> {
                         return `Incidents${(activeIncidentCount && ` (${activeIncidentCount})`) || ''}`;
                     },
                 },
+*/                
             ]}
             sidebarSections={this.getSidebarSections()}
             isNameEditable
